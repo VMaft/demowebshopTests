@@ -1,9 +1,6 @@
 package pages;
 
-import com.codeborne.selenide.Condition;
-import com.codeborne.selenide.Selenide;
-import com.codeborne.selenide.SelenideElement;
-import com.codeborne.selenide.WebElementCondition;
+import com.codeborne.selenide.*;
 import dto.User;
 import org.assertj.core.api.Assertions;
 
@@ -22,7 +19,10 @@ public class UserRegistrationPage {
     final String[] LABELS_EXPECTED_TEXTS = {
             "Gender:", "First name:", "Last name:", "Email:", "Password:", "Confirm password:", "Male", "Female"
     };
+    final String EMAIL_SPECIFIED_ERROR_TEXT = "The specified email already exists";
+    final String REGISTER_COMPLETED_TEXT = "Your registration completed";
 
+    //TODO: Вынести в строковые переменные селекторы для firstName, lastName, email
     final SelenideElement genderMale = $("#gender-male");
     final SelenideElement genderFemale = $("#gender-female");
     final SelenideElement firstName = $("#FirstName");
@@ -31,6 +31,10 @@ public class UserRegistrationPage {
     final SelenideElement password = $("#Password");
     final SelenideElement confirmPassword = $("#ConfirmPassword");
     final SelenideElement registerButton = $("#register-button");
+    final SelenideElement resultMessage = $(".page-body > .result");
+    final SelenideElement registerCompleteMessage = $(Selectors.withText(REGISTER_COMPLETED_TEXT));
+    final SelenideElement continueButton = $(Selectors.byValue("Continue"));
+    final SelenideElement headersAccountLink = $(".header-links .account");
 
     final SelenideElement firstNameErrorLabel = $(VALIDATION_ERROR_CLASS).$("[for='FirstName']");
     final SelenideElement lastNameErrorLabel = $(VALIDATION_ERROR_CLASS).$("[for='LastName']");
@@ -127,6 +131,22 @@ public class UserRegistrationPage {
         return this;
     }
 
+    public UserRegistrationPage clickContinue(){
+        continueButton.click();
+        return this;
+    }
+
+    public UserRegistrationPage clickAccountLink(){
+        headersAccountLink.click();
+        return this;
+    }
+
+    public UserRegistrationPage verifySuccessRegistration(){
+        registerCompleteMessage.shouldBe(appear);
+        continueButton.shouldBe(valid);
+        return this;
+    }
+
     private void setFieldValue(SelenideElement field, String fieldValue) {
         String fieldName = field.getAttribute("name");
         if (fieldName == null) fieldName = "unknown";
@@ -142,4 +162,16 @@ public class UserRegistrationPage {
         field.shouldHave(Condition.value(fieldValue));
     }
 
+    public UserRegistrationPage shouldContainsProfileLinkWithEmail(String email) {
+        $(Selectors.byLinkText(email)).shouldBe(valid);
+        return this;
+    }
+
+    public UserRegistrationPage verifyUserProfileContainsValidUserData(User user){
+        //TODO: Дописать проверку GENDER полей
+        $("#FirstName").shouldHave(value(user.getFirstName()));
+        $("#LastName").shouldHave(value(user.getLastName()));
+        $("#Email").shouldHave(value(user.getEmail()));
+        return this;
+    }
 }

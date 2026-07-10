@@ -52,7 +52,7 @@ public class UserProvider {
         return invalidUser;
     }
 
-    public User getRandomUser() {
+    public static User getRandomUser() {
         Faker faker = new Faker();
         return createUserWith(
                 faker.name().firstName(),
@@ -70,19 +70,19 @@ public class UserProvider {
         );
     }
 
-    public User getRandomUserWithoutEmail(){
+    public static User getRandomUserWithoutEmail(){
         User user = getRandomUser();
         user.setEmail("");
         return user;
     }
 
-    public User getRandomUserWithoutPassword(){
+    public static User getRandomUserWithoutPassword(){
         User user = getRandomUser();
         user.setPassword("");
         return user;
     }
 
-    public User getRandomUserWithShortPassword(){
+    public static User getRandomUserWithShortPassword(){
         User user = getRandomUser();
         user.setPassword(".");
         return user;
