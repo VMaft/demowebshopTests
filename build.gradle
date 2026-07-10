@@ -16,9 +16,10 @@ dependencies {
     testImplementation 'com.codeborne:selenide:7.16.0'
     testImplementation"org.assertj:assertj-core:4.0.0-M1"
     testImplementation 'org.slf4j:slf4j-simple:2.0.13'
-    testImplementation (platform("io.qameta.allure:allure-bom:2.35.3"))
-    testImplementation ('io.qameta.allure:allure-junit5')
-    testImplementation ("io.qameta.allure:allure-selenide")
+    testImplementation platform("io.qameta.allure:allure-bom:2.35.3")
+    testImplementation 'io.qameta.allure:allure-junit5'
+    testImplementation "io.qameta.allure:allure-selenide"
+    implementation 'net.datafaker:datafaker:2.7.0'
 }
 
 allure {
