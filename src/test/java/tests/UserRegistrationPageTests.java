@@ -2,7 +2,6 @@ package tests;
 
 import dto.RandomUserProvider;
 import dto.User;
-import dto.BaseUserProvider;
 import io.qameta.allure.Feature;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
@@ -18,7 +17,7 @@ public class UserRegistrationPageTests extends BaseTest {
 
     UserRegistrationPage page = new UserRegistrationPage();
 
-    @Test
+    @Test()
     @DisplayName("Пользователь может пройти регистрацию на сайте")
     @Tag("RegisterForm")
     void userCanBeRegister() {
