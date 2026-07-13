@@ -1,7 +1,8 @@
 package tests;
 
+import dto.RandomUserProvider;
 import dto.User;
-import dto.UserProvider;
+import dto.BaseUserProvider;
 import io.qameta.allure.Feature;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
@@ -22,9 +23,10 @@ public class UserRegistrationPageTests extends BaseTest {
     @Tag("RegisterForm")
     void userCanBeRegister() {
         step("Создаем тестового пользователя");
-        User user = UserProvider.getRandomUser();
+        User user = RandomUserProvider.getRandomUser();
         step("Сохраняем данные пользователя в параметры теста", ()-> {
             Attachments.addTestUserToParameters(user);
+            System.out.println(user);
         });
         step("Открываем форму регистрации", page::open);
         step("Проверяем что форма регистрации пользователя валидна", page::validateRegistrationForm);
@@ -38,7 +40,7 @@ public class UserRegistrationPageTests extends BaseTest {
             page.shouldContainsProfileLinkWithEmail(user.getEmail());
         });
         step("Переходим в профиль пользователя по ссылке", page::clickAccountLink);
-        step("Проверяем что в профиле пользователя отображаются верные данные", ()-> {
+        step("Проверяем что в профиле пользователя отображаются валидные данные", ()-> {
             page.verifyUserProfileContainsValidUserData(user);
         });
     }

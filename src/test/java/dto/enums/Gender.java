@@ -5,7 +5,6 @@ import java.util.Random;
 public enum Gender {
     MALE("M"), FEMALE("F");
 
-
     private final static Random RANDOM = new Random();
     private final String apiValue;
 

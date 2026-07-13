@@ -3,22 +3,11 @@ package dto;
 import dto.enums.Gender;
 
 public class User {
-    private String firstName;
-    private String lastName;
-    private String email;
-    private String password;
-    private Gender gender;
-
-
-    public User() {
-    }
-
-    public User(String firstName, String lastName, String email, String password) {
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.email = email;
-        this.password = password;
-    }
+    private final String firstName;
+    private final String lastName;
+    private final String email;
+    private final String password;
+    private final Gender gender;
 
     public User(String firstName, String lastName, String email, String password, Gender gender) {
         this.firstName = firstName;
@@ -28,43 +17,29 @@ public class User {
         this.gender = gender;
     }
 
+    public User(String firstName, String lastName, String email, String password) {
+        this(firstName, lastName, email, password, null);
+    }
+
     public String getFirstName() {
         return firstName;
     }
-
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
-    }
-
     public String getLastName() {
         return lastName;
     }
-
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
-    }
-
     public String getEmail() {
         return email;
     }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
     public String getPassword() {
         return password;
     }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
     public Gender getGender() {
         return gender;
     }
 
-    public void setGender(Gender gender) {
-        this.gender = gender;
+
+    public String toString(){
+        return "{ User = [Gender: \"" + gender + "\",  FirstName: \"" + firstName + "\", LastName: \"" + lastName
+                + "\", Email: \"" + email + "\", Password: \"" + password + "\"] }";
     }
 }

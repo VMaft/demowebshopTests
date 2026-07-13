@@ -2,6 +2,7 @@ package pages;
 
 import com.codeborne.selenide.*;
 import dto.User;
+import dto.enums.Gender;
 import org.assertj.core.api.Assertions;
 
 import java.util.List;
@@ -21,14 +22,20 @@ public class UserRegistrationPage {
     };
     final String EMAIL_SPECIFIED_ERROR_TEXT = "The specified email already exists";
     final String REGISTER_COMPLETED_TEXT = "Your registration completed";
+    final String FIRST_NAME_SELECTOR = "#FirstName";
+    final String LAST_NAME_SELECTOR = "#LastName";
+    final String EMAIL_SELECTOR = "#Email";
+    final String PASSWORD_SELECTOR = "#Password";
+    final String MALE_GENDER_SELECTOR = "#gender-male";
+    final String FEMALE_GENDER_SELECTOR = "#gender-female";
 
     //TODO: Вынести в строковые переменные селекторы для firstName, lastName, email
-    final SelenideElement genderMale = $("#gender-male");
-    final SelenideElement genderFemale = $("#gender-female");
-    final SelenideElement firstName = $("#FirstName");
-    final SelenideElement lastName = $("#LastName");
-    final SelenideElement email = $("#Email");
-    final SelenideElement password = $("#Password");
+    final SelenideElement genderMale = $(MALE_GENDER_SELECTOR);
+    final SelenideElement genderFemale = $(FEMALE_GENDER_SELECTOR);
+    final SelenideElement firstName = $(FIRST_NAME_SELECTOR);
+    final SelenideElement lastName = $(LAST_NAME_SELECTOR);
+    final SelenideElement email = $(EMAIL_SELECTOR);
+    final SelenideElement password = $(PASSWORD_SELECTOR);
     final SelenideElement confirmPassword = $("#ConfirmPassword");
     final SelenideElement registerButton = $("#register-button");
     final SelenideElement resultMessage = $(".page-body > .result");
@@ -78,20 +85,8 @@ public class UserRegistrationPage {
         return this;
     }
 
-    public UserRegistrationPage setGender(String gender) {
-        if (!gender.contains("M") || !gender.contains("F")) {
-            System.err.printf(
-                    String.format("Не передано значение аргумента для поля gender. Получено значение: 'gender':[%s]",
-                            gender
-                    )
-            );
-        }
-        if (gender.isBlank()) {
-            System.out.println("WARN: Не передано значение gender. Выбор gender будет пропущен.");
-            return this;
-        }
-
-        if (gender.contains("M")) genderMale.click();
+    public UserRegistrationPage setGender(Gender gender) {
+        if (gender.equals(Gender.MALE)) genderMale.click();
         else genderFemale.click();
         return this;
     }
@@ -122,7 +117,7 @@ public class UserRegistrationPage {
     }
 
     public UserRegistrationPage fillRegistrationFormWithUserData(User user) {
-        if (user.getGender() != null) setGender(user.getGender().toString());
+        if (user.getGender() != null) setGender(user.getGender());
         setFirstName(user.getFirstName())
                 .setLastName(user.getLastName())
                 .setEmail(user.getEmail())
@@ -168,10 +163,17 @@ public class UserRegistrationPage {
     }
 
     public UserRegistrationPage verifyUserProfileContainsValidUserData(User user){
-        //TODO: Дописать проверку GENDER полей
-        $("#FirstName").shouldHave(value(user.getFirstName()));
-        $("#LastName").shouldHave(value(user.getLastName()));
-        $("#Email").shouldHave(value(user.getEmail()));
+        if(user.getGender() != null){
+            if(user.getGender().equals(Gender.MALE)) $(MALE_GENDER_SELECTOR).shouldBe(selected);
+            else $(FEMALE_GENDER_SELECTOR).shouldBe(selected);
+        }
+        else {
+            $(MALE_GENDER_SELECTOR).shouldNotBe(selected);
+            $(FEMALE_GENDER_SELECTOR).shouldNotBe(selected);
+        }
+        $(FIRST_NAME_SELECTOR).shouldHave(value(user.getFirstName()));
+        $(LAST_NAME_SELECTOR).shouldHave(value(user.getLastName()));
+        $(EMAIL_SELECTOR).shouldHave(value(user.getEmail()));
         return this;
     }
 }
