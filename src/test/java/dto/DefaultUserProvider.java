@@ -17,15 +17,15 @@ public class DefaultUserProvider {
                 .firstName(FIRST_NAME).lastName(LAST_NAME).email(EMAIL).password(PASSWORD).gender(GENDER);
     }
 
-    public static User getBaseUser() {
+    public static User getDefaultUser() {
         return baseBuilder().build();
     }
 
-    public static User getBaseUserWithoutEmail() {
+    public static User getUserWithoutEmail() {
         return baseBuilder().email("").build();
     }
 
-    public static User getBaseUserWithInvalidEmail() {
+    public static User getUserWithInvalidEmail() {
         return baseBuilder().email("email_with_invalid@domain").build();
     }
 
@@ -33,11 +33,11 @@ public class DefaultUserProvider {
         return baseBuilder().password("1").build();
     }
 
-    public static User getBaseUserWithEmptyPassword() {
+    public static User getUserWithEmptyPassword() {
         return baseBuilder().password("").build();
     }
 
-    public static User getBaseUserWithEmptyFirstAndLastName() {
+    public static User getUserWithEmptyFirstAndLastName() {
         return baseBuilder().firstName("").lastName("").build();
     }
 }

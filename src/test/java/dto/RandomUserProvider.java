@@ -37,9 +37,7 @@ public class RandomUserProvider {
 
     private static String getRandomEmail(String emailName) {
         // Защита от вероятных спец.символов в имени пользователя
-        return (emailName.replace(" ", "_")
-                .replace("'", "")
-                .replace("\"", "")
+        return (emailName.replaceAll("[^\\p{Alnum}]", "_")
                 + EMAIL_DOMAIN).toLowerCase();
     }
 

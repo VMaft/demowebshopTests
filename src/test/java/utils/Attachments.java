@@ -8,6 +8,8 @@ import io.qameta.allure.Allure;
 import io.qameta.allure.Attachment;
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.TakesScreenshot;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -17,7 +19,11 @@ import java.lang.reflect.Field;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
+import static io.qameta.allure.Allure.step;
+
 public class Attachments {
+    private static final Logger log = LoggerFactory.getLogger(Attachments.class);
+
     /**
      * Создаёт скриншот текущей страницы и прикрепляет его к Allure-отчёту.
      * <p>
@@ -66,11 +72,17 @@ public class Attachments {
 
     // Топорное решение по добавлению тестовых данных пользователя в параметры теста
     public static void saveTestUserDataToParameters(User user) {
-        Allure.parameter("First Name", user.getFirstName());
-        Allure.parameter("Last Name", user.getLastName());
-        Allure.parameter("Email", user.getEmail());
-        Allure.parameter("Gender", user.getGender());
-        Allure.parameter("Password", user.getPassword());
+        if(user == null) {
+            log.warn("Передан пустой объект user.");
+        }
+        step("Сохраняем данные тестового пользователя в параметры теста", () -> {
+            Allure.parameter("First Name", user.getFirstName());
+            Allure.parameter("Last Name", user.getLastName());
+            Allure.parameter("Email", user.getEmail());
+            Allure.parameter("Gender", user.getGender());
+            Allure.parameter("Password", user.getPassword());
+        });
+        log.info("Test Data:{\n\t{}\n}", user);
     }
 
     /**

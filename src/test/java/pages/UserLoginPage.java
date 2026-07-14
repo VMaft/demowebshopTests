@@ -8,7 +8,7 @@ import static com.codeborne.selenide.Condition.*;
 import static com.codeborne.selenide.Selenide.$;
 import static io.qameta.allure.Allure.step;
 
-public class LoginPage {
+public class UserLoginPage {
     final String ENDPOINT = "/login";
     final String LOGIN_PAGE_SELECTOR = ".page.login-page";
     final String HEADER_EXPECTED_TEXT = "Welcome, Please Sign In!";
@@ -29,12 +29,12 @@ public class LoginPage {
     final SelenideElement forgotPassword = $(Selectors.byLinkText("Forgot password?"));
 
 
-    public LoginPage open() {
+    public UserLoginPage open() {
         Selenide.open(ENDPOINT);
         return this;
     }
 
-    public LoginPage shouldBeValid() {
+    public UserLoginPage shouldBeValid() {
         step("Проверяем что форма открылась и отображается", () -> {
             $(LOGIN_PAGE_SELECTOR).shouldBe(visible);
         });
@@ -56,27 +56,27 @@ public class LoginPage {
         return this;
     }
 
-    public LoginPage clickRegisterButton() {
+    public UserLoginPage clickRegisterButton() {
         registerButton.click();
         return this;
     }
 
-    public LoginPage clickLoginButton() {
+    public UserLoginPage clickLoginButton() {
         loginButton.click();
         return this;
     }
 
-    public LoginPage clickForgotPassword(){
+    public UserLoginPage clickForgotPassword(){
         forgotPassword.click();
         return this;
     }
 
-    public LoginPage setRememberMeCheckbox(){
+    public UserLoginPage setRememberMeCheckbox(){
         checkboxInput.click();
         return this;
     }
 
-    public LoginPage loginWithCredentials(String email, String password){
+    public UserLoginPage loginWithCredentials(String email, String password){
         if(email.isBlank() || password.isBlank()){
             throw new IllegalArgumentException(
                     String.format("Не переданы значения значения email или password.\nemail:[%s], password:[%s]"

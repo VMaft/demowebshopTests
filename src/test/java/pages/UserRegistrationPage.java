@@ -4,16 +4,19 @@ import com.codeborne.selenide.*;
 import dto.User;
 import dto.enums.Gender;
 import org.assertj.core.api.Assertions;
+import org.openqa.selenium.Keys;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 import static com.codeborne.selenide.Condition.*;
-import static com.codeborne.selenide.Selenide.$;
-import static com.codeborne.selenide.Selenide.$$;
+import static com.codeborne.selenide.Selenide.*;
 import static io.qameta.allure.Allure.step;
 
 public class UserRegistrationPage {
+    private static final Logger log = LoggerFactory.getLogger(UserRegistrationPage.class);
     final String ENDPOINT = "/register";
     final String VALIDATION_ERROR_CLASS = ".field-validation-error";
     final String LABELS_SELECTOR = "label";
@@ -29,7 +32,14 @@ public class UserRegistrationPage {
     final String MALE_GENDER_SELECTOR = "#gender-male";
     final String FEMALE_GENDER_SELECTOR = "#gender-female";
 
-    //TODO: Вынести в строковые переменные селекторы для firstName, lastName, email
+    final String FIRST_NAME_REQUIRED_MESSAGE = "First name is required.";
+    final String LAST_NAME_REQUIRED_MESSAGE = "Last name is required.";
+    final String EMAIL_REQUIRED_MESSAGE = "Email is required.";
+    final String WRONG_EMAIL_MESSAGE = "Wrong email";
+    final String PASSWORD_REQUIRED_MESSAGE = "Password is required.";
+    final String PASSWORDS_MATCHING_ERROR_MESSAGE = "The password and confirmation password do not match.";
+    final String SHORT_PASSWORDS_MESSAGE = "The password should have at least 6 characters.";
+
     final SelenideElement genderMale = $(MALE_GENDER_SELECTOR);
     final SelenideElement genderFemale = $(FEMALE_GENDER_SELECTOR);
     final SelenideElement firstName = $(FIRST_NAME_SELECTOR);
@@ -43,11 +53,11 @@ public class UserRegistrationPage {
     final SelenideElement continueButton = $(Selectors.byValue("Continue"));
     final SelenideElement headersAccountLink = $(".header-links .account");
 
-    final SelenideElement firstNameErrorLabel = $(VALIDATION_ERROR_CLASS).$("[for='FirstName']");
-    final SelenideElement lastNameErrorLabel = $(VALIDATION_ERROR_CLASS).$("[for='LastName']");
-    final SelenideElement emailErrorLabel = $(VALIDATION_ERROR_CLASS).$("[for='Email']");
-    final SelenideElement passwordErrorLabel = $(VALIDATION_ERROR_CLASS).$("[for='Password']");
-    final SelenideElement confirmPasswordErrorLabel = $(VALIDATION_ERROR_CLASS).$("[for='ConfirmPassword']");
+    final SelenideElement firstNameErrorLabel = $("span[for = 'FirstName']");
+    final SelenideElement lastNameErrorLabel = $("span[for='LastName']");
+    final SelenideElement emailErrorLabel = $("span[for='Email']");
+    final SelenideElement passwordErrorLabel = $("span[for='Password']");
+    final SelenideElement confirmPasswordErrorLabel = $("span[for='ConfirmPassword']");
 
     WebElementCondition[] valid = {enabled, visible, clickable};
 
@@ -58,6 +68,11 @@ public class UserRegistrationPage {
 
     public UserRegistrationPage clickRegisterButton() {
         registerButton.click();
+        return this;
+    }
+
+    public UserRegistrationPage clickTabKey() {
+        actions().sendKeys(Keys.TAB).perform();
         return this;
     }
 
@@ -111,7 +126,7 @@ public class UserRegistrationPage {
         return this;
     }
 
-    public UserRegistrationPage confirmPassword(String passwordValue) {
+    public UserRegistrationPage confirmPasswordWith(String passwordValue) {
         setFieldValue(confirmPassword, passwordValue);
         return this;
     }
@@ -122,21 +137,21 @@ public class UserRegistrationPage {
                 .setLastName(user.getLastName())
                 .setEmail(user.getEmail())
                 .setPassword(user.getPassword())
-                .confirmPassword(user.getPassword());
+                .confirmPasswordWith(user.getPassword());
         return this;
     }
 
-    public UserRegistrationPage clickContinue(){
+    public UserRegistrationPage clickContinue() {
         continueButton.click();
         return this;
     }
 
-    public UserRegistrationPage clickAccountLink(){
+    public UserRegistrationPage clickAccountLink() {
         headersAccountLink.click();
         return this;
     }
 
-    public UserRegistrationPage verifySuccessRegistration(){
+    public UserRegistrationPage verifySuccessRegistration() {
         registerCompleteMessage.shouldBe(appear);
         continueButton.shouldBe(valid);
         return this;
@@ -147,11 +162,10 @@ public class UserRegistrationPage {
         if (fieldName == null) fieldName = "unknown";
 
         if (fieldValue.isBlank()) {
-            throw new IllegalArgumentException(
-                    String.format("Не передано значение аргумента для поля. Получено значение: '%s':[%s]"
-                            , fieldName, fieldValue
-                    )
-            );
+            log.info("{}\nДобавление значения в поле {} пропущено.",
+                    String.format("Не передан аргумент для поля '%s'. Получено: {'%s':%s}"
+                    , fieldName, fieldName, fieldValue), fieldName);
+            return;
         }
         field.setValue(fieldValue);
         field.shouldHave(Condition.value(fieldValue));
@@ -162,18 +176,56 @@ public class UserRegistrationPage {
         return this;
     }
 
-    public UserRegistrationPage verifyUserProfileContainsValidUserData(User user){
-        if(user.getGender() != null){
-            if(user.getGender().equals(Gender.MALE)) $(MALE_GENDER_SELECTOR).shouldBe(selected);
+    public UserRegistrationPage verifyUserProfileContainsValidUserData(User user) {
+        if (user.getGender() != null) {
+            if (user.getGender().equals(Gender.MALE)) $(MALE_GENDER_SELECTOR).shouldBe(selected);
             else $(FEMALE_GENDER_SELECTOR).shouldBe(selected);
-        }
-        else {
+        } else {
             $(MALE_GENDER_SELECTOR).shouldNotBe(selected);
             $(FEMALE_GENDER_SELECTOR).shouldNotBe(selected);
         }
         $(FIRST_NAME_SELECTOR).shouldHave(value(user.getFirstName()));
         $(LAST_NAME_SELECTOR).shouldHave(value(user.getLastName()));
         $(EMAIL_SELECTOR).shouldHave(value(user.getEmail()));
+        return this;
+    }
+
+    public UserRegistrationPage verifyRequiredFieldsMessagesAppear() {
+        verifyFirstAndLastNameRequireMessageAppear();
+        verifyEmailRequireMessageAppear();
+        verifyPasswordRequiredMessageAppear();
+        return this;
+    }
+
+    public UserRegistrationPage verifyFirstAndLastNameRequireMessageAppear(){
+        $(Selectors.withText(FIRST_NAME_REQUIRED_MESSAGE)).shouldBe(appear);
+        $(Selectors.withText(LAST_NAME_REQUIRED_MESSAGE)).shouldBe(appear);
+        return this;
+    }
+
+    public UserRegistrationPage verifyPasswordRequiredMessageAppear() {
+        passwordErrorLabel.shouldBe(visible).shouldHave(text(PASSWORD_REQUIRED_MESSAGE));
+        confirmPasswordErrorLabel.shouldBe(visible).shouldHave(text(PASSWORD_REQUIRED_MESSAGE));
+        return this;
+    }
+
+    public UserRegistrationPage verifyPasswordMatchingErrorMessageAppear(){
+        confirmPasswordErrorLabel.shouldBe(visible).shouldHave(text(PASSWORDS_MATCHING_ERROR_MESSAGE));
+        return this;
+    }
+
+    public UserRegistrationPage verifyEmailRequireMessageAppear(){
+        emailErrorLabel.shouldBe(visible).shouldHave(text(EMAIL_REQUIRED_MESSAGE));
+        return this;
+    }
+
+    public UserRegistrationPage verifyWrongEmailMessageAppear(){
+        emailErrorLabel.shouldBe(visible).shouldHave(text(WRONG_EMAIL_MESSAGE));
+        return this;
+    }
+
+    public UserRegistrationPage verifyShortPasswordMessageAppear(){
+        passwordErrorLabel.shouldBe(visible).shouldHave(text(SHORT_PASSWORDS_MESSAGE));
         return this;
     }
 }
