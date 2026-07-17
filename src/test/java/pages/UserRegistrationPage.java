@@ -7,38 +7,35 @@ import org.assertj.core.api.Assertions;
 import org.openqa.selenium.Keys;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tests.data.enums.ValidationErrors;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 import static com.codeborne.selenide.Condition.*;
+import static com.codeborne.selenide.Selectors.withText;
 import static com.codeborne.selenide.Selenide.*;
 import static io.qameta.allure.Allure.step;
+import static tests.data.enums.ValidationErrors.*;
 
 public class UserRegistrationPage {
     private static final Logger log = LoggerFactory.getLogger(UserRegistrationPage.class);
+
     final String ENDPOINT = "/register";
     final String VALIDATION_ERROR_CLASS = ".field-validation-error";
     final String LABELS_SELECTOR = "label";
     final String[] LABELS_EXPECTED_TEXTS = {
             "Gender:", "First name:", "Last name:", "Email:", "Password:", "Confirm password:", "Male", "Female"
     };
-    final String EMAIL_SPECIFIED_ERROR_TEXT = "The specified email already exists";
+
     final String REGISTER_COMPLETED_TEXT = "Your registration completed";
+
     final String FIRST_NAME_SELECTOR = "#FirstName";
     final String LAST_NAME_SELECTOR = "#LastName";
     final String EMAIL_SELECTOR = "#Email";
     final String PASSWORD_SELECTOR = "#Password";
     final String MALE_GENDER_SELECTOR = "#gender-male";
     final String FEMALE_GENDER_SELECTOR = "#gender-female";
-
-    final String FIRST_NAME_REQUIRED_MESSAGE = "First name is required.";
-    final String LAST_NAME_REQUIRED_MESSAGE = "Last name is required.";
-    final String EMAIL_REQUIRED_MESSAGE = "Email is required.";
-    final String WRONG_EMAIL_MESSAGE = "Wrong email";
-    final String PASSWORD_REQUIRED_MESSAGE = "Password is required.";
-    final String PASSWORDS_MATCHING_ERROR_MESSAGE = "The password and confirmation password do not match.";
-    final String SHORT_PASSWORDS_MESSAGE = "The password should have at least 6 characters.";
 
     final SelenideElement genderMale = $(MALE_GENDER_SELECTOR);
     final SelenideElement genderFemale = $(FEMALE_GENDER_SELECTOR);
@@ -49,7 +46,7 @@ public class UserRegistrationPage {
     final SelenideElement confirmPassword = $("#ConfirmPassword");
     final SelenideElement registerButton = $("#register-button");
     final SelenideElement resultMessage = $(".page-body > .result");
-    final SelenideElement registerCompleteMessage = $(Selectors.withText(REGISTER_COMPLETED_TEXT));
+    final SelenideElement registerCompleteMessage = $(withText(REGISTER_COMPLETED_TEXT));
     final SelenideElement continueButton = $(Selectors.byValue("Continue"));
     final SelenideElement headersAccountLink = $(".header-links .account");
 
@@ -191,41 +188,38 @@ public class UserRegistrationPage {
     }
 
     public UserRegistrationPage verifyRequiredFieldsMessagesAppear() {
-        verifyFirstAndLastNameRequireMessageAppear();
-        verifyEmailRequireMessageAppear();
-        verifyPasswordRequiredMessageAppear();
+        $(firstNameErrorLabel).shouldBe(visible).shouldHave(text(FIRST_NAME_REQUIRED.getMessage()));
+        $(lastNameErrorLabel).shouldBe(visible).shouldHave(text(LAST_NAME_REQUIRED.getMessage()));
+        $(emailErrorLabel).shouldBe(visible).shouldHave(text(EMAIL_REQUIRED.getMessage()));
+        $(passwordErrorLabel).shouldBe(visible).shouldHave(text(PASSWORD_REQUIRED.getMessage()));
+        $(confirmPasswordErrorLabel).shouldBe(visible).shouldHave(text(PASSWORD_REQUIRED.getMessage()));
+        return this;
+    }
+
+    public UserRegistrationPage verifyRequireMessageAppearWithText(String expectedMessage){
+        $(withText(expectedMessage)).shouldBe(appear);
         return this;
     }
 
     public UserRegistrationPage verifyFirstAndLastNameRequireMessageAppear(){
-        $(Selectors.withText(FIRST_NAME_REQUIRED_MESSAGE)).shouldBe(appear);
-        $(Selectors.withText(LAST_NAME_REQUIRED_MESSAGE)).shouldBe(appear);
+        $(withText(FIRST_NAME_REQUIRED.getMessage())).shouldBe(appear);
+        $(withText(LAST_NAME_REQUIRED.getMessage())).shouldBe(appear);
         return this;
     }
 
     public UserRegistrationPage verifyPasswordRequiredMessageAppear() {
-        passwordErrorLabel.shouldBe(visible).shouldHave(text(PASSWORD_REQUIRED_MESSAGE));
-        confirmPasswordErrorLabel.shouldBe(visible).shouldHave(text(PASSWORD_REQUIRED_MESSAGE));
+        passwordErrorLabel.shouldBe(visible).shouldHave(text(PASSWORD_REQUIRED.getMessage()));
+        confirmPasswordErrorLabel.shouldBe(visible).shouldHave(text(PASSWORD_REQUIRED.getMessage()));
         return this;
     }
 
     public UserRegistrationPage verifyPasswordMatchingErrorMessageAppear(){
-        confirmPasswordErrorLabel.shouldBe(visible).shouldHave(text(PASSWORDS_MATCHING_ERROR_MESSAGE));
+        confirmPasswordErrorLabel.shouldBe(visible).shouldHave(text(PASSWORDS_MATCHING_ERROR.getMessage()));
         return this;
     }
 
     public UserRegistrationPage verifyEmailRequireMessageAppear(){
-        emailErrorLabel.shouldBe(visible).shouldHave(text(EMAIL_REQUIRED_MESSAGE));
-        return this;
-    }
-
-    public UserRegistrationPage verifyWrongEmailMessageAppear(){
-        emailErrorLabel.shouldBe(visible).shouldHave(text(WRONG_EMAIL_MESSAGE));
-        return this;
-    }
-
-    public UserRegistrationPage verifyShortPasswordMessageAppear(){
-        passwordErrorLabel.shouldBe(visible).shouldHave(text(SHORT_PASSWORDS_MESSAGE));
+        emailErrorLabel.shouldBe(visible).shouldHave(text(EMAIL_REQUIRED.getMessage()));
         return this;
     }
 }

@@ -85,6 +85,12 @@ public class Attachments {
         log.info("Test Data:{\n\t{}\n}", user);
     }
 
+    public static void attachRequiredFieldsTestsParameters(String caseName, String expectedMessageText, User userData){
+        Allure.parameter("Данные пользователя", userData);
+        Allure.parameter("Ожидаемое сообщение", expectedMessageText);
+        Allure.parameter("Кейс", caseName);
+    }
+
     /**
      * Создает PNG-изображение с визуализацией сообщения об ошибке.
      *

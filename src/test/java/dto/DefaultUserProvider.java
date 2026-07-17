@@ -29,7 +29,7 @@ public class DefaultUserProvider {
         return baseBuilder().email("email_with_invalid@domain").build();
     }
 
-    public static User getBaseUserWithShortPassword() {
+    public static User getUserWithShortPassword() {
         return baseBuilder().password("1").build();
     }
 
@@ -37,7 +37,11 @@ public class DefaultUserProvider {
         return baseBuilder().password("").build();
     }
 
-    public static User getUserWithEmptyFirstAndLastName() {
-        return baseBuilder().firstName("").lastName("").build();
+    public static User getUserWithEmptyFirstName() {
+        return baseBuilder().firstName("").build();
+    }
+
+    public static User getUserWithEmptyLastName() {
+        return baseBuilder().lastName("").build();
     }
 }
