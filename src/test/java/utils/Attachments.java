@@ -3,7 +3,7 @@ package utils;
 import com.codeborne.selenide.ElementsCollection;
 import com.codeborne.selenide.SelenideElement;
 import com.codeborne.selenide.WebDriverRunner;
-import dto.User;
+import dto.users.User;
 import io.qameta.allure.Allure;
 import io.qameta.allure.Attachment;
 import org.openqa.selenium.OutputType;
@@ -83,6 +83,12 @@ public class Attachments {
             Allure.parameter("Password", user.getPassword());
         });
         log.info("Test Data:{\n\t{}\n}", user);
+    }
+
+    public static void attachRequiredFieldsTestsParameters(String caseName, String expectedMessageText, User userData){
+        Allure.parameter("Данные пользователя", userData);
+        Allure.parameter("Ожидаемое сообщение", expectedMessageText);
+        Allure.parameter("Кейс", caseName);
     }
 
     /**

@@ -1,14 +1,15 @@
 package tests;
 
+import com.codeborne.selenide.Selenide;
 import dto.DefaultUserProvider;
 import dto.RandomUserProvider;
-import dto.User;
-import io.qameta.allure.Description;
+import dto.RegisteredUserProvider;
+import dto.users.User;
+import io.qameta.allure.Allure;
 import io.qameta.allure.Feature;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Tags;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import pages.UserRegistrationPage;
 import utils.Attachments;
 
@@ -19,6 +20,12 @@ import static io.qameta.allure.Allure.step;
 public class UserRegistrationTests extends BaseTest {
 
     UserRegistrationPage page = new UserRegistrationPage();
+
+    @BeforeEach
+    void setUp() {
+        step("Чистим куки и локальное хранилище перед тестом.");
+        Selenide.clearBrowserCookies();
+    }
 
     @Test()
     @DisplayName("Пользователь может пройти регистрацию на сайте")
@@ -57,22 +64,21 @@ public class UserRegistrationTests extends BaseTest {
         step("Проверяем сообщение об обязательном заполнении полей формы", () -> {
             page.verifyRequiredFieldsMessagesAppear();
         });
-
     }
 
-    @Test
-    @DisplayName("Пользователь не может быть зарегистрирован без пароля")
+    @MethodSource("tests.data.sources.UserRegistrationTestDataProvider#invalidUserDataAndExpectedRequireMessages")
     @Tags({@Tag("UI tests"), @Tag("RegisterForm"), @Tag("Negative tests")})
-    void userCanNotBeRegisteredWithoutPassword() {
-        User user = DefaultUserProvider.getUserWithEmptyPassword();
-        Attachments.saveTestUserDataToParameters(user);
-
+    @DisplayName("Валидация полей.")
+    @ParameterizedTest(name = "{index}. Пользователь {0} не может быть зарегистрирован.")
+    void userCanNotBeRegisteredWithoutRequiredData(String caseName, String requiredDataMessage, User user) {
         step("Открываем форму регистрации", page::open);
         step("Заполняем поля формы регистрации данными пользователя", () -> {
             page.fillRegistrationFormWithUserData(user);
         });
         step("Нажимаем кнопку регистрации", page::clickRegisterButton);
-        step("Проверяем сообщение об успехе", page::verifyPasswordRequiredMessageAppear);
+        step("Проверяем наличие ошибки с текстом: " + requiredDataMessage, () -> {
+            page.verifyRequireMessageAppearWithText(requiredDataMessage);
+        });
     }
 
     @Test
@@ -100,67 +106,23 @@ public class UserRegistrationTests extends BaseTest {
     }
 
     @Test
-    @DisplayName("Пользователь без Имени и Фамилии не может быть зарегистрирован")
+    @DisplayName("Нельзя зарегистрировать пользователя с чужим email")
     @Tags({@Tag("UI tests"), @Tag("RegisterForm"), @Tag("Negative tests")})
-    @Description("В целях оптимизации проверяем поведение полей Имени и Фамилии одновременно")
-    void userWithoutFirstNameAndLastNameCanNotBeRegistered() {
-        User user = DefaultUserProvider.getUserWithEmptyFirstAndLastName();
-        Attachments.saveTestUserDataToParameters(user);
+    void userCanNotBeRegisteredWithElseEmail() {
+        step("Регистрируем пользователя через API");
+        User registerdUser = new RegisteredUserProvider().getUser();
+        Allure.parameter("Email зарегистрированного пользователя: ", registerdUser.getEmail());
+
+        step("Создаем нового пользователя с таким же email: " + registerdUser.getEmail());
+        User userWithForeignEmail = RandomUserProvider.getRandomUserWithEmail(registerdUser.getEmail());
+        Attachments.saveTestUserDataToParameters(userWithForeignEmail);
 
         step("Открываем форму регистрации", page::open);
-        step("Заполняем поля формы регистрации данными тестового пользователя", () -> {
-            page.fillRegistrationFormWithUserData(user);
+        step("Заполняем поля формы регистрации данными пользователя", () -> {
+            page.fillRegistrationFormWithUserData(userWithForeignEmail);
         });
         step("Нажимаем кнопку регистрации", page::clickRegisterButton);
-        step("Проверяем сообщение об обязательности полей Имени и Фамилии",
-                page::verifyFirstAndLastNameRequireMessageAppear);
-    }
-
-    @Test
-    @DisplayName("Пользователь без email не может быть зарегистрирован")
-    @Tags({@Tag("UI tests"), @Tag("RegisterForm"), @Tag("Negative tests")})
-    void userWithoutEmailCanNotBeRegistered() {
-        User user = DefaultUserProvider.getUserWithoutEmail();
-        Attachments.saveTestUserDataToParameters(user);
-
-        step("Открываем форму регистрации", page::open);
-        step("Заполняем поля формы регистрации данными тестового пользователя", () -> {
-            page.fillRegistrationFormWithUserData(user);
-        });
-        step("Нажимаем кнопку регистрации", page::clickRegisterButton);
-        step("Проверяем сообщение об обязательности Email", page::verifyEmailRequireMessageAppear);
-    }
-
-    @Test
-    @DisplayName("Пользователь c невалидным email не может быть зарегистрирован")
-    @Tags({@Tag("UI tests"), @Tag("RegisterForm"), @Tag("Negative tests")})
-    void userWithInvalidEmailCanNotBeRegistered() {
-        User user = DefaultUserProvider.getUserWithInvalidEmail();
-        Attachments.saveTestUserDataToParameters(user);
-
-        step("Открываем форму регистрации", page::open);
-        step("Заполняем поля формы регистрации данными тестового пользователя", () -> {
-            page.fillRegistrationFormWithUserData(user);
-        });
-        step("Нажимаем клавишу Tab для смены фокуса", page::clickTabKey);
-        step("Проверяем сообщение о неправильном email", page::verifyWrongEmailMessageAppear);
-        step("Нажимаем кнопку регистрации", page::clickRegisterButton);
-        step("Сообщение о неправильном email все еще отображается", page::verifyWrongEmailMessageAppear);
-    }
-
-    @Test
-    @DisplayName("Пользователь c коротким паролем не может быть зарегистрирован")
-    @Tags({@Tag("UI tests"), @Tag("RegisterForm"), @Tag("Negative tests")})
-    void userWithShortPasswordCanNotBeRegistered() {
-        User user = DefaultUserProvider.getBaseUserWithShortPassword();
-        Attachments.saveTestUserDataToParameters(user);
-
-        step("Открываем форму регистрации", page::open);
-        step("Заполняем поля формы регистрации данными тестового пользователя", () -> {
-            page.fillRegistrationFormWithUserData(user);
-        });
-        step("Проверяем сообщение о коротком пароле", page::verifyShortPasswordMessageAppear);
-        step("Нажимаем кнопку регистрации", page::clickRegisterButton);
-        step("Сообщение о коротком пароле все еще отображается", page::verifyShortPasswordMessageAppear);
+        step("Проверяем сообщение: 'Пользователь с таким email уже зарегистрирован'",
+                page::verifySpecifiedEmailExistErrorMessageAppear);
     }
 }

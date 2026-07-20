@@ -1,7 +1,10 @@
 package dto;
 
 import dto.enums.Gender;
+import dto.users.User;
 import net.datafaker.Faker;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 // Провайдер RandomUser для генерации случайных пользовательских данных для чистой регистрации
 // Точная гарантия того что регистрация на сайте пройдет
@@ -47,6 +50,10 @@ public class RandomUserProvider {
 
     public static User getRandomUserWithoutEmail() {
         return baseRandomUserBuilder().email("").build();
+    }
+
+    public static User getRandomUserWithEmail(String email) {
+        return baseRandomUserBuilder().email(email).build();
     }
 
     public static User getRandomUserWithInvalidEmail() {
