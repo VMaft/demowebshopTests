@@ -1,13 +1,12 @@
 package pages;
 
 import com.codeborne.selenide.*;
-import dto.User;
+import dto.users.User;
 import dto.enums.Gender;
 import org.assertj.core.api.Assertions;
 import org.openqa.selenium.Keys;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import tests.data.enums.ValidationErrors;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -29,6 +28,7 @@ public class UserRegistrationPage {
     };
 
     final String REGISTER_COMPLETED_TEXT = "Your registration completed";
+    final String EMAIL_ALREADY_EXIST_ERROR = "The specified email already exists";
 
     final String FIRST_NAME_SELECTOR = "#FirstName";
     final String LAST_NAME_SELECTOR = "#LastName";
@@ -161,7 +161,7 @@ public class UserRegistrationPage {
         if (fieldValue.isBlank()) {
             log.info("{}\nДобавление значения в поле {} пропущено.",
                     String.format("Не передан аргумент для поля '%s'. Получено: {'%s':%s}"
-                    , fieldName, fieldName, fieldValue), fieldName);
+                            , fieldName, fieldName, fieldValue), fieldName);
             return;
         }
         field.setValue(fieldValue);
@@ -196,12 +196,12 @@ public class UserRegistrationPage {
         return this;
     }
 
-    public UserRegistrationPage verifyRequireMessageAppearWithText(String expectedMessage){
+    public UserRegistrationPage verifyRequireMessageAppearWithText(String expectedMessage) {
         $(withText(expectedMessage)).shouldBe(appear);
         return this;
     }
 
-    public UserRegistrationPage verifyFirstAndLastNameRequireMessageAppear(){
+    public UserRegistrationPage verifyFirstAndLastNameRequireMessageAppear() {
         $(withText(FIRST_NAME_REQUIRED.getMessage())).shouldBe(appear);
         $(withText(LAST_NAME_REQUIRED.getMessage())).shouldBe(appear);
         return this;
@@ -213,13 +213,18 @@ public class UserRegistrationPage {
         return this;
     }
 
-    public UserRegistrationPage verifyPasswordMatchingErrorMessageAppear(){
+    public UserRegistrationPage verifyPasswordMatchingErrorMessageAppear() {
         confirmPasswordErrorLabel.shouldBe(visible).shouldHave(text(PASSWORDS_MATCHING_ERROR.getMessage()));
         return this;
     }
 
-    public UserRegistrationPage verifyEmailRequireMessageAppear(){
+    public UserRegistrationPage verifyEmailRequireMessageAppear() {
         emailErrorLabel.shouldBe(visible).shouldHave(text(EMAIL_REQUIRED.getMessage()));
+        return this;
+    }
+
+    public UserRegistrationPage verifySpecifiedEmailExistErrorMessageAppear() {
+        $(withText(EMAIL_ALREADY_EXIST_ERROR)).shouldBe(appear);
         return this;
     }
 }

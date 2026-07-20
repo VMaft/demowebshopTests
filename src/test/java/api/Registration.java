@@ -1,28 +1,25 @@
 package api;
 
-import dto.User;
+import config.DemoWebShopConfiguration;
+import dto.users.User;
 import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.response.Response;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
-import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pages.UserRegistrationPage;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import static io.restassured.RestAssured.given;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class Registration {
-    private static final Logger log = LoggerFactory.getLogger(UserRegistrationPage.class);
+    private static final Logger log = LoggerFactory.getLogger(Registration.class);
 
-    private static final String BASE_URL = "https://demowebshop.tricentis.com";
+    private static final String BASE_URL = DemoWebShopConfiguration.BASE_URL;
     private static final String REGISTER_ENDPOINT = "/register";
     private static final String REGISTER_PAGE_URL = BASE_URL + REGISTER_ENDPOINT;
 
@@ -56,22 +53,22 @@ public class Registration {
         }
 
         requestSpecBuilder = new RequestSpecBuilder()
-                .setBaseUri(REGISTER_PAGE_URL)
+                .setBaseUri(BASE_URL)
                 .addCookies(initRequestResponse.getCookies())
                 .addHeaders(getDefaultHeaders());
 
-        log.info("Установлены Cookie сессии. Cookies: {}", initRequestResponse.getCookies());
+        log.info("Сессия инициализирована. Установлены Cookie: {}", initRequestResponse.getCookies());
     }
 
     private Response sendGetRequest() {
-        return sendGetRequest(REGISTER_PAGE_URL, new HashMap<>());
+        return sendGetRequest(REGISTER_ENDPOINT, new HashMap<>());
     }
 
-    private Response sendGetRequest(String url, Map<String, String> cookies) {
+    public Response sendGetRequest(String endpoint, Map<String, String> cookies) {
         return given()
                 .cookies(cookies != null ? cookies : new HashMap<>())
-                .baseUri(url)
-                .get()
+                .baseUri(BASE_URL)
+                .get(endpoint)
                 .then()
                 .statusCode(200)
                 .extract().response();
@@ -81,8 +78,7 @@ public class Registration {
         if (requestSpecBuilder == null) {
             initSession();
         }
-
-        Response response = given()
+        return given()
                 .spec(requestSpecBuilder.build())
                 .formParam("__RequestVerificationToken", csrfToken)
                 .formParam("FirstName", user.getFirstName())
@@ -92,52 +88,9 @@ public class Registration {
                 .formParam("ConfirmPassword", user.getPassword())
                 .formParam("register-button", "Register")
                 .when()
-                .post()
+                .post(REGISTER_ENDPOINT)
                 .then()
                 .extract().response();
-        assertNotNull(response);
-
-        if (response.statusCode() == 200) {
-            log.info("Получен статус код {}", response.statusCode());
-            log.info("Проверяем наличие ошибок. Validation summary errors: {}", getRegisterValidationError(response));
-
-            logResponseInfo(response);
-            return response;
-        }
-
-        if (response.statusCode() == 302) {
-            String location = response.getHeader("Location");
-            System.out.println("Редирект на: " + location);  // /registerresult/1
-
-            if (location != null) {
-                return sendGetRequest(BASE_URL + location, response.getCookies());
-            } else {
-                log.warn("Не получена редирект-ссылка.");
-                logResponseInfo(response);
-            }
-        } else {
-            log.info("Получен статус код {}", response.statusCode());
-            log.info("С телом ответа. Response body:{}", response.getBody().asString());
-        }
-
-        return response;
-    }
-
-    private void logResponseInfo(Response response) {
-        log.info("Received user session Cookies: \n{}\n", response.getCookies());
-        log.info("Response Headers: \n{}\n", response.getHeaders());
-        log.info("Response Body: \n{}\n", response.getBody().asString());
-    }
-
-    private String getRegisterValidationError(Response response) {
-        Document pageDocument = Jsoup.parse(response.getBody().asString());
-        Element errorBlock = pageDocument.select(".validation-summary-errors").first();
-
-        if (errorBlock != null) {
-            return errorBlock.text();
-        }
-
-        return null;
     }
 
     // Токен CSRF генерируется сервером автоматически и отправляется в ответ на Get запрос в виде HTML-кода.
@@ -151,20 +104,5 @@ public class Registration {
 
         assertNotNull(__requestVerificationToken);
         return __requestVerificationToken.attr("value");
-    }
-
-    @Test
-    void sniffing() {
-        User paposhkaUser = User.Builder.with()
-                .firstName("Paposhka")
-                .lastName("Gjordich")
-                .email("paposhka_gjordich8@autotests.user")
-                .password("Gjordich123")
-                .build();
-
-        Response response = sendRegisterUserRequest(paposhkaUser);
-
-        assertThat(getRegisterValidationError(response)).isNull();
-        assertThat(response.getBody().asString()).contains("Your registration completed");
     }
 }

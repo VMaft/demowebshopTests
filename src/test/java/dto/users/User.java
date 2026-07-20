@@ -1,4 +1,4 @@
-package dto;
+package dto.users;
 
 import dto.enums.Gender;
 
@@ -9,7 +9,7 @@ public class User {
     private final String password;
     private final Gender gender;
 
-    public User(Builder builder) {
+    protected User(Builder builder) {
         this.firstName = builder.firstName;
         this.lastName = builder.lastName;
         this.email = builder.email;
@@ -56,11 +56,11 @@ public class User {
     // После переноса внутри User вызов превратился в: User.UserBuilder.builder.
     // Теперь цепочка вызовов стала интуитивнее: User.Builder.with().*.build().
     public static class Builder {
-        private String firstName;
-        private String lastName;
-        private String email;
-        private String password;
-        private Gender gender;
+        protected String firstName;
+        protected String lastName;
+        protected String email;
+        protected String password;
+        protected Gender gender;
 
         public static Builder with() {
             return new Builder();

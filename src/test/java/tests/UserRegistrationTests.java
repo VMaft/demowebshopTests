@@ -1,13 +1,13 @@
 package tests;
 
+import com.codeborne.selenide.Selenide;
 import dto.DefaultUserProvider;
 import dto.RandomUserProvider;
-import dto.User;
+import dto.RegisteredUserProvider;
+import dto.users.User;
+import io.qameta.allure.Allure;
 import io.qameta.allure.Feature;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Tags;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import pages.UserRegistrationPage;
@@ -20,6 +20,12 @@ import static io.qameta.allure.Allure.step;
 public class UserRegistrationTests extends BaseTest {
 
     UserRegistrationPage page = new UserRegistrationPage();
+
+    @BeforeEach
+    void setUp() {
+        step("Чистим куки и локальное хранилище перед тестом.");
+        Selenide.clearBrowserCookies();
+    }
 
     @Test()
     @DisplayName("Пользователь может пройти регистрацию на сайте")
@@ -97,5 +103,26 @@ public class UserRegistrationTests extends BaseTest {
         step("Нажимаем кнопку регистрации", page::clickRegisterButton);
         step("Сообщение о несовпадении паролей все еще отображается",
                 page::verifyPasswordMatchingErrorMessageAppear);
+    }
+
+    @Test
+    @DisplayName("Нельзя зарегистрировать пользователя с чужим email")
+    @Tags({@Tag("UI tests"), @Tag("RegisterForm"), @Tag("Negative tests")})
+    void userCanNotBeRegisteredWithElseEmail() {
+        step("Регистрируем пользователя через API");
+        User registerdUser = new RegisteredUserProvider().getUser();
+        Allure.parameter("Email зарегистрированного пользователя: ", registerdUser.getEmail());
+
+        step("Создаем нового пользователя с таким же email: " + registerdUser.getEmail());
+        User userWithForeignEmail = RandomUserProvider.getRandomUserWithEmail(registerdUser.getEmail());
+        Attachments.saveTestUserDataToParameters(userWithForeignEmail);
+
+        step("Открываем форму регистрации", page::open);
+        step("Заполняем поля формы регистрации данными пользователя", () -> {
+            page.fillRegistrationFormWithUserData(userWithForeignEmail);
+        });
+        step("Нажимаем кнопку регистрации", page::clickRegisterButton);
+        step("Проверяем сообщение: 'Пользователь с таким email уже зарегистрирован'",
+                page::verifySpecifiedEmailExistErrorMessageAppear);
     }
 }
